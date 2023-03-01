@@ -59,7 +59,7 @@ class ServiceFactory:
         return _get_generic_api_service(
             name="tasks",
             version="v1",
-            scopes=self.SCOPES,
+            scopes=self.scopes,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
