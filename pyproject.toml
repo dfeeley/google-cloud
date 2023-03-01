@@ -13,16 +13,17 @@ dependencies = [
 	'google-auth-oauthlib',
 ]
 
-[project.optional-dependencies]
-test = [
-	"pytest",
-]
-
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+
+[project.optional-dependencies]
+tests = [
+	"pytest",
+]
+
 
 [build-system]
 requires = ["setuptools>=61.0"]
