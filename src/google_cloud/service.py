@@ -14,11 +14,17 @@ class ServiceFactory:
     token_file: str
     secrets_file: str
 
+    SCOPES = [
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
+
     def docs_api_service(self, refresh=False):
         return _get_generic_api_service(
             name="docs",
             version="v1",
-            scopes=["https://www.googleapis.com/auth/documents.readonly"],
+            scopes=self.SCOPES,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
@@ -28,7 +34,7 @@ class ServiceFactory:
         return _get_generic_api_service(
             name="sheets",
             version="v4",
-            scopes=["https://www.googleapis.com/auth/spreadsheets"],
+            scopes=self.SCOPES,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
@@ -38,7 +44,7 @@ class ServiceFactory:
         return _get_generic_api_service(
             name="drive",
             version="v3",
-            scopes=["https://www.googleapis.com/auth/drive"],
+            scopes=self.SCOPES,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
