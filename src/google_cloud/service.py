@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import List
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -6,25 +7,29 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# Google sheets API documentation is: https://developers.google.com/sheets/api
+
+DEFAULT_SCOPES = [
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 
 
 @dataclass
 class ServiceFactory:
     token_file: str
     secrets_file: str
+    scopes: List = field(default_factory=list)
 
-    SCOPES = [
-        "https://www.googleapis.com/auth/documents",
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
+    def __post_init__(self):
+        if not self.scopes:
+            self.scopes = DEFAULT_SCOPES
 
     def docs_api_service(self, refresh=False):
         return _get_generic_api_service(
             name="docs",
             version="v1",
-            scopes=self.SCOPES,
+            scopes=self.scopes,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
@@ -34,7 +39,7 @@ class ServiceFactory:
         return _get_generic_api_service(
             name="sheets",
             version="v4",
-            scopes=self.SCOPES,
+            scopes=self.scopes,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
@@ -44,6 +49,16 @@ class ServiceFactory:
         return _get_generic_api_service(
             name="drive",
             version="v3",
+            scopes=self.scopes,
+            token_file=self.token_file,
+            secrets_file=self.secrets_file,
+            refresh=refresh,
+        )
+
+    def tasks_api_service(self, refresh=False):
+        return _get_generic_api_service(
+            name="tasks",
+            version="v1",
             scopes=self.SCOPES,
             token_file=self.token_file,
             secrets_file=self.secrets_file,

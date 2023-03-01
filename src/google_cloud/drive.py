@@ -32,10 +32,10 @@ class FileWithId:
 
 
 class DriveClient:
-    def __init__(self, token_file, secrets_file):
+    def __init__(self, token_file, secrets_file, scopes=None):
         self.token_file = token_file
         self.secrets_file = secrets_file
-        self.factory = ServiceFactory(self.token_file, self.secrets_file)
+        self.factory = ServiceFactory(self.token_file, self.secrets_file, scopes=scopes)
 
     def get_service(self, refresh=False):
         return self.factory.drive_api_service(refresh=refresh)

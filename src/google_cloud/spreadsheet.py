@@ -16,8 +16,8 @@ class GoogleSpreadsheet:
         return self.title
 
     @classmethod
-    def for_id(cls, id, token_file, secrets_file):
-        service_factory = ServiceFactory(token_file, secrets_file)
+    def for_id(cls, id, token_file, secrets_file, scopes=None):
+        service_factory = ServiceFactory(token_file, secrets_file, scopes=scopes)
         service = service_factory.sheets_api_service()
 
         response = service.get(spreadsheetId=id).execute()
