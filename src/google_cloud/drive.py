@@ -40,13 +40,13 @@ class DriveClient:
     def get_service(self, refresh=False):
         return self.factory.drive_api_service(refresh=refresh)
 
-    def list_folders(self, parent=None):
+    def list_folders(self, parent=None, fields=None):
         return self._list_files(
-            parent=parent, mimetype="application/vnd.google-apps.folder"
+            parent=parent, mimetype="application/vnd.google-apps.folder", fields=fields
         )
 
-    def list_files(self, parent=None):
-        return self._list_files(parent=parent)
+    def list_files(self, parent=None, fields=None):
+        return self._list_files(parent=parent, fields=None)
 
     def upload_file(self, path, name=None, mimetype=None, parent=None):
         name = name or path.name
@@ -141,7 +141,9 @@ class DriveClient:
             .execute()
         )
 
-    def _list_files(self, parent=None, mimetype=None):
+    def _list_files(self, parent=None, mimetype=None, fields=None):
+        fields = fields or ("id", "name")
+        fields_str = ", ".join(fields)
         files = []
         page_token = None
         q_terms = []
@@ -156,13 +158,18 @@ class DriveClient:
                 .list(
                     q=" and ".join(q_terms),
                     spaces="drive",
-                    fields="nextPageToken, " "files(id, name)",
+                    fields=f"nextPageToken, files({fields_str})",
                     pageToken=page_token,
                 )
                 .execute()
             )
             for file in response.get("files", []):
-                files.append(FileWithId(file.get("name"), file.get("id")))
+                # if the caller does not specify fields, return FileWithId objects, otherwise just the native obj
+                if fields is None:
+                    obj = FileWithId(file.get("name"), file.get("id"))
+                else:
+                    obj = file
+                files.append(obj)
             page_token = response.get("nextPageToken", None)
             if page_token is None:
                 break
