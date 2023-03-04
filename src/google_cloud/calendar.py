@@ -42,6 +42,10 @@ class Event:
             tz=tz,
         )
 
+    @property
+    def all_day(self):
+        return self.start.time() == self.end.time() == datetime.time(0, 0)
+
 
 def parse_date(raw):
     return datetime.datetime.strptime(raw, "%Y-%m-%d").date()
