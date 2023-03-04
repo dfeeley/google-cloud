@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .~lock*
 .pytest_cache/
+google_cloud.egg-info/

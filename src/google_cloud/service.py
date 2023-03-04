@@ -25,45 +25,33 @@ class ServiceFactory:
         if not self.scopes:
             self.scopes = DEFAULT_SCOPES
 
-    def docs_api_service(self, refresh=False):
-        return _get_generic_api_service(
-            name="docs",
-            version="v1",
+    def _get_service(self, name, version, attr=None, refresh=False):
+        service = _get_generic_api_service(
+            name=name,
+            version=version,
             scopes=self.scopes,
             token_file=self.token_file,
             secrets_file=self.secrets_file,
             refresh=refresh,
-        ).documents()
+        )
+        if attr:
+            return getattr(service, attr)()
+        return service
+
+    def docs_api_service(self, refresh=False):
+        return self._get_service("docs", "v1", attr="documents", refresh=refresh)
 
     def sheets_api_service(self, refresh=False):
-        return _get_generic_api_service(
-            name="sheets",
-            version="v4",
-            scopes=self.scopes,
-            token_file=self.token_file,
-            secrets_file=self.secrets_file,
-            refresh=refresh,
-        ).spreadsheets()
+        return self._get_service("sheets", "v4", attr="spreadsheets", refresh=refresh)
 
     def drive_api_service(self, refresh=False):
-        return _get_generic_api_service(
-            name="drive",
-            version="v3",
-            scopes=self.scopes,
-            token_file=self.token_file,
-            secrets_file=self.secrets_file,
-            refresh=refresh,
-        )
+        return self._get_service("drive", "v3", refresh=refresh)
 
     def tasks_api_service(self, refresh=False):
-        return _get_generic_api_service(
-            name="tasks",
-            version="v1",
-            scopes=self.scopes,
-            token_file=self.token_file,
-            secrets_file=self.secrets_file,
-            refresh=refresh,
-        )
+        return self._get_service("tasks", "v1", refresh=refresh)
+
+    def calendar_api_service(self, refresh=False):
+        return self._get_service("calendar", "v3", refresh=refresh)
 
 
 def _get_generic_api_service(

@@ -46,7 +46,7 @@ class DriveClient:
         )
 
     def list_files(self, parent=None, fields=None):
-        return self._list_files(parent=parent, fields=None)
+        return self._list_files(parent=parent, fields=fields)
 
     def upload_file(self, path, name=None, mimetype=None, parent=None):
         name = name or path.name
@@ -142,13 +142,17 @@ class DriveClient:
         )
 
     def _list_files(self, parent=None, mimetype=None, fields=None):
-        fields = fields or ("id", "name")
+        if fields is None:
+            custom_fields = False
+            fields = ("id", "name")
+        else:
+            custom_fields = True
         fields_str = ", ".join(fields)
         files = []
         page_token = None
-        q_terms = []
+        q_terms = ["trashed=false"]
         if mimetype:
-            q_terms = [f"mimeType='{mimetype}'"]
+            q_terms.append(f"mimeType='{mimetype}'")
         if parent:
             q_terms.append(f"'{parent}' in parents")
         service = self.get_service()
@@ -165,10 +169,10 @@ class DriveClient:
             )
             for file in response.get("files", []):
                 # if the caller does not specify fields, return FileWithId objects, otherwise just the native obj
-                if fields is None:
-                    obj = FileWithId(file.get("name"), file.get("id"))
-                else:
+                if custom_fields:
                     obj = file
+                else:
+                    obj = FileWithId(file.get("name"), file.get("id"))
                 files.append(obj)
             page_token = response.get("nextPageToken", None)
             if page_token is None:
