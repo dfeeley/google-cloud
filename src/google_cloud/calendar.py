@@ -98,6 +98,7 @@ class CalendarClient:
                 [
                     Event.from_dict(event, calendar, self.tz)
                     for event in response["items"]
+                    if event.get("status", "") != "cancelled"
                 ]
             )
         return events
