@@ -83,7 +83,7 @@ class GoogleSheet:
                     id=props["sheetId"],
                     title=props["title"],
                     index=props["index"],
-                    hidden=props["hidden"],
+                    hidden=props.get("hidden", False),
                     sheet_type=props["sheetType"],
                     meta_row_count=props["gridProperties"]["rowCount"],
                     meta_col_count=props["gridProperties"]["columnCount"],
