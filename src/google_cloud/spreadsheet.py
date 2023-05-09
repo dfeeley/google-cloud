@@ -67,6 +67,7 @@ class GoogleSheet:
     id: str
     title: str
     index: int
+    hidden: bool
     sheet_type: str
     meta_row_count: int
     meta_col_count: int
@@ -82,6 +83,7 @@ class GoogleSheet:
                     id=props["sheetId"],
                     title=props["title"],
                     index=props["index"],
+                    hidden=props["hidden"],
                     sheet_type=props["sheetType"],
                     meta_row_count=props["gridProperties"]["rowCount"],
                     meta_col_count=props["gridProperties"]["columnCount"],
