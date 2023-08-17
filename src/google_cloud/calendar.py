@@ -26,20 +26,24 @@ class Calendar:
 
 @dataclass
 class Event:
+    id: str
     name: str
     start: datetime.datetime
     end: datetime.datetime
     calendar: Calendar
     tz: zoneinfo.ZoneInfo
+    recurrence: list
 
     @classmethod
     def from_dict(cls, d, calendar, tz):
         return cls(
+            id=d.get("id"),
             name=d.get("summary", "Untitled Event"),
             start=parse_event_date(d.get("start"), calendar.time_zone),
             end=parse_event_date(d.get("end"), calendar.time_zone),
             calendar=calendar,
             tz=tz,
+            recurrence=d.get("recurrence"),
         )
 
     @property
@@ -78,7 +82,7 @@ class CalendarClient:
             return [Calendar.from_dict(item) for item in response["items"]]
         return response["items"]
 
-    def list_events(self, calendars, start, end):
+    def list_events(self, calendars, start, end, expand_recurring=True):
         start = self._normalize_timestamp(start)
         end = self._normalize_timestamp(end)
 
@@ -101,7 +105,37 @@ class CalendarClient:
                     if event.get("status", "") != "cancelled"
                 ]
             )
+        if expand_recurring:
+            events = self._expand_recurring(events, start, end, service=service)
         return events
+
+    def _expand_recurring(self, events, start, end, service=None):
+        ret = []
+        for event in events:
+            if not event.recurrence:
+                ret.append(event)
+                continue
+            instances = self.list_event_instances(event, start, end, service=service)
+            ret.extend(instances)
+        return ret
+
+    def list_event_instances(self, parent, start, end, service=None):
+        service = service or self.get_service()
+        response = (
+            service.events()
+            .instances(
+                calendarId=parent.calendar.id,
+                eventId=parent.id,
+                timeMax=end.isoformat(),
+                timeMin=start.isoformat(),
+            )
+            .execute()
+        )
+        return [
+            Event.from_dict(event, parent.calendar, self.tz)
+            for event in response["items"]
+            if event.get("status", "") != "cancelled"
+        ]
 
     def _normalize_timestamp(self, timestamp):
         if is_tz_aware(timestamp):
