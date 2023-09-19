@@ -22,3 +22,7 @@ class BooksClient:
             )
             .execute()
         )
+
+    def get(self, id):
+        service = self.get_service()
+        return service.volumes().get(volumeId=id).execute()
