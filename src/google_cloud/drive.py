@@ -40,13 +40,18 @@ class DriveClient:
     def get_service(self, refresh=False):
         return self.factory.drive_api_service(refresh=refresh)
 
-    def list_folders(self, parent=None, fields=None):
+    def list_folders(self, parent=None, fields=None, modified_after=None):
         return self._list_files(
-            parent=parent, mimetype="application/vnd.google-apps.folder", fields=fields
+            parent=parent,
+            mimetype="application/vnd.google-apps.folder",
+            fields=fields,
+            modified_after=modified_after,
         )
 
-    def list_files(self, parent=None, fields=None):
-        return self._list_files(parent=parent, fields=fields)
+    def list_files(self, parent=None, fields=None, modified_after=None):
+        return self._list_files(
+            parent=parent, fields=fields, modified_after=modified_after
+        )
 
     def upload_file(self, path, name=None, mimetype=None, parent=None):
         name = name or path.name
@@ -141,7 +146,7 @@ class DriveClient:
             .execute()
         )
 
-    def _list_files(self, parent=None, mimetype=None, fields=None):
+    def _list_files(self, parent=None, mimetype=None, fields=None, modified_after=None):
         if fields is None:
             custom_fields = False
             fields = ("id", "name")
@@ -155,6 +160,9 @@ class DriveClient:
             q_terms.append(f"mimeType='{mimetype}'")
         if parent:
             q_terms.append(f"'{parent}' in parents")
+        if modified_after:
+            modified_after_str = modified_after.strftime("%Y-%m-%dT%H:%M:%S")
+            q_terms.append(f"modified > '{modified_after_str}'")
         service = self.get_service()
         while True:
             response = (
