@@ -40,17 +40,25 @@ class DriveClient:
     def get_service(self, refresh=False):
         return self.factory.drive_api_service(refresh=refresh)
 
-    def list_folders(self, parent=None, fields=None, modified_after=None):
+    def list_folders(
+        self, parent=None, fields=None, modified_after=None, created_after=None
+    ):
         return self._list_files(
             parent=parent,
             mimetype="application/vnd.google-apps.folder",
             fields=fields,
             modified_after=modified_after,
+            created_after=created_after,
         )
 
-    def list_files(self, parent=None, fields=None, modified_after=None):
+    def list_files(
+        self, parent=None, fields=None, modified_after=None, created_after=None
+    ):
         return self._list_files(
-            parent=parent, fields=fields, modified_after=modified_after
+            parent=parent,
+            fields=fields,
+            modified_after=modified_after,
+            created_after=created_after,
         )
 
     def upload_file(self, path, name=None, mimetype=None, parent=None):
@@ -146,7 +154,14 @@ class DriveClient:
             .execute()
         )
 
-    def _list_files(self, parent=None, mimetype=None, fields=None, modified_after=None):
+    def _list_files(
+        self,
+        parent=None,
+        mimetype=None,
+        fields=None,
+        modified_after=None,
+        created_after=None,
+    ):
         if fields is None:
             custom_fields = False
             fields = ("id", "name")
@@ -162,7 +177,10 @@ class DriveClient:
             q_terms.append(f"'{parent}' in parents")
         if modified_after:
             modified_after_str = modified_after.strftime("%Y-%m-%dT%H:%M:%S")
-            q_terms.append(f"modified > '{modified_after_str}'")
+            q_terms.append(f"modifiedTime > '{modified_after_str}'")
+        if created_after:
+            created_after_str = created_after.strftime("%Y-%m-%dT%H:%M:%S")
+            q_terms.append(f"createdTime > '{created_after_str}'")
         service = self.get_service()
         while True:
             response = (
