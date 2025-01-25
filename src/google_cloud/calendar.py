@@ -60,7 +60,10 @@ def parse_event_date(obj, tz):
         return datetime.datetime.combine(parse_date(date), datetime.time(0, 0)).replace(
             tzinfo=tz
         )
-    return datetime.datetime.fromisoformat(obj["dateTime"])
+    dt = obj["dateTime"]
+    if dt.endswith("Z"):
+        dt = dt[:-1]
+    return datetime.datetime.fromisoformat(dt).replace(tzinfo=tz)
 
 
 class CalendarClient:
