@@ -49,6 +49,12 @@ class GoogleSpreadsheet:
             spreadsheetId=self.id, body=batch_update_values_request_body
         ).execute()
 
+    def add_sheet(self, name):
+        data = {"requests": [{"addSheet": {"properties": {"title": name}}}]}
+        self.service_factory.sheets_api_service().batchUpdate(
+            spreadsheetId=self.id, body=data
+        ).execute()
+
     def update_single_cells(self, cells, values):
         data = []
         for cell, value in zip(cells, values):

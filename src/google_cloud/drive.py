@@ -40,20 +40,10 @@ class DriveClient:
     def get_service(self, refresh=False):
         return self.factory.drive_api_service(refresh=refresh)
 
-    def get(self, id, fields=None):
-        if fields is None:
-            custom_fields = False
-            fields = ("id", "name")
-        else:
-            custom_fields = True
-        fields_str = ", ".join(fields)
+    def get(self, id):
         service = self.get_service()
         file = service.files().get(fileId=id).execute()
-        if custom_fields:
-            obj = file
-        else:
-            obj = FileWithId(file.get("name"), file.get("id"))
-        return obj
+        return FileWithId(file.get("name"), file.get("id"))
 
     def list_folders(
         self, parent=None, fields=None, modified_after=None, created_after=None
