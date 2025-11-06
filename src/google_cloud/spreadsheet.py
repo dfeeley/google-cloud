@@ -39,10 +39,10 @@ class GoogleSpreadsheet:
             if sheet.title.lower() == title.lower():
                 return sheet
 
-    def update_range(self, range, values):
+    def update_range(self, range, values, input_option="RAW"):
         data = [{"range": range, "values": values}]
         batch_update_values_request_body = {
-            "valueInputOption": "RAW",
+            "valueInputOption": input_option,
             "data": data,
         }
         self.service_factory.sheets_api_service().values().batchUpdate(
@@ -55,12 +55,12 @@ class GoogleSpreadsheet:
             spreadsheetId=self.id, body=data
         ).execute()
 
-    def update_single_cells(self, cells, values):
+    def update_single_cells(self, cells, values, input_option="RAW"):
         data = []
         for cell, value in zip(cells, values):
             data.append({"range": cell, "values": [[value]]})
         batch_update_values_request_body = {
-            "valueInputOption": "RAW",
+            "valueInputOption": input_option,
             "data": data,
         }
         self.service_factory.sheets_api_service().values().batchUpdate(
