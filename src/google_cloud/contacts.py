@@ -1,3 +1,5 @@
+import json
+
 from .service import ServiceFactory
 
 
@@ -10,46 +12,37 @@ class ContactsClient:
     def get_service(self, refresh=False):
         return self.factory.people_api_service(refresh=refresh)
 
-    def list(self):
+    def list(
+        self, page_size=1000, include_memberships=False, include_phone_numbers=False
+    ):
         service = self.get_service()
-        results = (
-            service.people()
-            .connections()
-            .list(
+        contacts = []
+        next_page_token = None
+
+        fields = "names,emailAddresses"
+        if include_memberships:
+            fields += ",memberships"
+        if include_phone_numbers:
+            fields += ",phoneNumbers"
+
+        while True:
+            list_kwargs = dict(
                 resourceName="people/me",
-                pageSize=100,
-                personFields="names,emailAddresses,phoneNumbers",
+                pageSize=page_size,
+                personFields=fields,
             )
-            .execute()
-        )
-        connections = results.get("connections", [])
+            if next_page_token:
+                list_kwargs["pageToken"] = next_page_token
 
-        if not connections:
-            print("No contacts found.")
-            return
+            results = service.people().connections().list(**list_kwargs).execute()
 
-        print(f"Found {len(connections)} contacts:\n")
-        print("-" * 60)
+            contacts.extend(results.get("connections", []))
+            if (next_page_token := results.get("nextPageToken")) is None:
+                break
 
-        for person in connections:
-            # Extract name
-            names = person.get("names", [])
-            name = names[0]["displayName"] if names else "No name"
-
-            # Extract emails
-            emails = person.get("emailAddresses", [])
-            email_list = [email["value"] for email in emails]
-
-            # Extract phone numbers
-            phones = person.get("phoneNumbers", [])
-            phone_list = [phone["value"] for phone in phones]
-
-            print(f"Name: {name}")
-            if email_list:
-                print(f"Email: {', '.join(email_list)}")
-            if phone_list:
-                print(f"Phone: {', '.join(phone_list)}")
-            print("-" * 60)
+        with open("/tmp/contacts.json", "w") as f:
+            json.dump(contacts, f, indent=4)
+        return contacts
 
     def group_contacts(self, group_name="family"):
         service = self.get_service()
