@@ -56,6 +56,9 @@ class ServiceFactory:
     def books_api_service(self, refresh=False):
         return self._get_service("books", "v1", refresh=refresh)
 
+    def people_api_service(self, refresh=False):
+        return self._get_service("people", "v1", refresh=refresh)
+
 
 def _get_generic_api_service(
     name, version, scopes, token_file, secrets_file, refresh=False
