@@ -5,11 +5,8 @@ def find_group_by_name(groups, name):
             return group
 
 
-def filter_contacts_by_group_name(group_name, contacts, groups):
+def filter_contacts_by_group(contacts, group):
     ret = []
-    group = find_group_by_name(groups, group_name)
-    if group is None:
-        return ret
     for contact in contacts:
         memberships = contact.get("memberships", [])
         for membership in memberships:
@@ -27,6 +24,40 @@ def filter_contacts_by_group_name(group_name, contacts, groups):
 def contacts_as_email_lookup(contacts):
     ret = {}
     for contact in contacts:
-        for email_address in contact.get("email_addresses", []):
+        for email_address in contact.get("emailAddresses", []):
             ret[email_address["value"].lower()] = contact
     return ret
+
+
+def create_contacts(client, objs):
+    """Objs expected to be a list of dataclass type objects with fields:
+    given_name: mandatory
+    family_name: mandatory
+    email -- or -- email_addresses (both optional)
+    phone: optional
+    """
+
+    def build_contact_payload(obj):
+        ret = {"names": {"givenName": obj.given_name, "familyName": obj.family_name}}
+        if hasattr(obj, "email"):
+            if obj.email:
+                ret["emailAddresses"] = [{"type": "work", "value": obj.email}]
+        elif hasattr(obj, "email_addresses"):
+            if obj.email_addresses:
+                ret["emailAddresses"] = [
+                    {"type": "work", "value": ea} for ea in obj.email_addresses
+                ]
+        if hasattr(obj, "phone"):
+            if obj.phone:
+                ret["phoneNumbers"] = {"type": "mobile", "value": obj.phone}
+        return ret
+
+    batch_requests = []
+
+    for obj in objs:
+        request_body = {"contactPerson": build_contact_payload(obj)}
+        batch_requests.append(request_body)
+
+    if batch_requests:
+        batch_request = {"contacts": batch_requests, "read_mask": "names"}
+        return client.batch_create(batch_request)

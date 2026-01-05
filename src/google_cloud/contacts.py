@@ -56,3 +56,19 @@ class ContactsClient:
             with open("/tmp/groups.json", "w") as f:
                 json.dump(groups, f, indent=4)
         return groups
+
+    def batch_create(self, batch_request):
+        return (
+            self.get_service()
+            .people()
+            .batchCreateContacts(body=batch_request)
+            .execute()
+        )
+
+    def delete_contact(self, contact):
+        return (
+            self.get_service()
+            .people()
+            .deleteContact(resourceName=contact["resourceName"])
+            .execute()
+        )
