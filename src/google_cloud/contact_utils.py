@@ -29,6 +29,21 @@ def contacts_as_email_lookup(contacts):
     return ret
 
 
+def ensure_groups_exist(client, group_names):
+    groups = client.groups()
+    for name in group_names:
+        group = find_group_by_name(groups, name)
+        if group is None:
+            client.create_group(name)
+
+
+def ensure_group_exists(client, group_name):
+    groups = client.groups()
+    group = find_group_by_name(groups, group_name)
+    if group is None:
+        client.create_group(group_name)
+
+
 def create_contacts(client, objs):
     """Objs expected to be a list of dataclass type objects with fields:
     given_name: mandatory
@@ -60,4 +75,4 @@ def create_contacts(client, objs):
 
     if batch_requests:
         batch_request = {"contacts": batch_requests, "read_mask": "names"}
-        return client.batch_create(batch_request)
+        return client.batch_create_contacts(batch_request)

@@ -57,7 +57,11 @@ class ContactsClient:
                 json.dump(groups, f, indent=4)
         return groups
 
-    def batch_create(self, batch_request):
+    def create_group(self, group_name):
+        obj = {"contactGroup": {"name": group_name}}
+        return self.get_service().contactGroups().create(body=obj).execute()
+
+    def batch_create_contacts(self, batch_request):
         return (
             self.get_service()
             .people()
