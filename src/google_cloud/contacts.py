@@ -61,6 +61,22 @@ class ContactsClient:
         obj = {"contactGroup": {"name": group_name}}
         return self.get_service().contactGroups().create(body=obj).execute()
 
+    def group_modify_members(self, group, to_add=None, to_remove=None):
+        """members_to_* should be a list of contact resource ids of the form people/{personId}"""
+        return (
+            self.get_service()
+            .contactGroups()
+            .members()
+            .modify(
+                resourceName=group["resourceName"],
+                body={
+                    "resourceNamesToAdd": to_add or [],
+                    "resourceNamesToRemove": to_remove or [],
+                },
+            )
+            .execute()
+        )
+
     def batch_create_contacts(self, batch_request):
         return (
             self.get_service()
