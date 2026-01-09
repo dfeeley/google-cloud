@@ -45,34 +45,7 @@ def ensure_group_exists(client, group_name):
 
 
 def create_contacts(client, objs):
-    """Objs expected to be a list of dataclass type objects with fields:
-    given_name: mandatory
-    family_name: mandatory
-    email -- or -- email_addresses (both optional)
-    phone: optional
-    """
-
-    def build_contact_payload(obj):
-        ret = {"names": {"givenName": obj.given_name, "familyName": obj.family_name}}
-        if hasattr(obj, "email"):
-            if obj.email:
-                ret["emailAddresses"] = [{"type": "work", "value": obj.email}]
-        elif hasattr(obj, "email_addresses"):
-            if obj.email_addresses:
-                ret["emailAddresses"] = [
-                    {"type": "work", "value": ea} for ea in obj.email_addresses
-                ]
-        if hasattr(obj, "phone"):
-            if obj.phone:
-                ret["phoneNumbers"] = {"type": "mobile", "value": obj.phone}
-        return ret
-
-    batch_requests = []
-
-    for obj in objs:
-        request_body = {"contactPerson": build_contact_payload(obj)}
-        batch_requests.append(request_body)
-
+    batch_requests = [{"contactPerson": obj} for obj in objs]
     if batch_requests:
-        batch_request = {"contacts": batch_requests, "read_mask": "names"}
-        return client.batch_create_contacts(batch_request)
+        payload = {"contacts": batch_requests, "read_mask": "names"}
+        return client.batch_create_contacts(payload)
